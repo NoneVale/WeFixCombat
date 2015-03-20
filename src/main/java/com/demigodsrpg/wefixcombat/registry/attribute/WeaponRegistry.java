@@ -1,4 +1,4 @@
-package com.demigodsrpg.wefixcombat.registry;
+package com.demigodsrpg.wefixcombat.registry.attribute;
 
 import com.demigodsrpg.wefixcombat.attribute.AttributeData;
 import com.demigodsrpg.wefixcombat.attribute.WeaponAttribute;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class WeaponRegistry implements Registry<Double, WeaponAttribute, ItemStack> {
+public class WeaponRegistry implements AttributeRegistry<Double, WeaponAttribute, ItemStack> {
     private static final ListMultimap<Material, AttributeData<Double, WeaponAttribute>> MAP_DATA = Multimaps.newListMultimap(new ConcurrentHashMap<>(), ArrayList::new);
 
     @Override
@@ -21,12 +21,13 @@ public class WeaponRegistry implements Registry<Double, WeaponAttribute, ItemSta
     }
 
     @Override
-    public List<AttributeData<Double, WeaponAttribute>> getData(ItemStack item) throws UnsupportedOperationException {
+    public List<AttributeData<Double, WeaponAttribute>> getData(ItemStack item) {
         Material type = item == null ? Material.AIR : item.getType();
         if (MAP_DATA.containsKey(type)) {
             return MAP_DATA.get(type);
         }
-        throw new UnsupportedOperationException("Can only return weapon data from the weapon registry.");
+        // FIXME Anything that isn't a weapon is treated as air.
+        return getData(new ItemStack(Material.AIR));
     }
 
     @Override

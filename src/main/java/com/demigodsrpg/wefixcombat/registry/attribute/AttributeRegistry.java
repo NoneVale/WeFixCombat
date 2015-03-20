@@ -1,4 +1,4 @@
-package com.demigodsrpg.wefixcombat.registry;
+package com.demigodsrpg.wefixcombat.registry.attribute;
 
 import com.demigodsrpg.wefixcombat.attribute.Attribute;
 import com.demigodsrpg.wefixcombat.attribute.AttributeData;
@@ -7,7 +7,7 @@ import org.bukkit.Material;
 
 import java.util.List;
 
-public interface Registry<D, A extends Attribute<D>, T> {
+public interface AttributeRegistry<D, A extends Attribute<D>, T> {
     Multimap<Material, AttributeData<D, A>> getMap();
 
     List<AttributeData<D, A>> getData(T type);

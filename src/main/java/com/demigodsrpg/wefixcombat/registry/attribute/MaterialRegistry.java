@@ -1,4 +1,4 @@
-package com.demigodsrpg.wefixcombat.registry;
+package com.demigodsrpg.wefixcombat.registry.attribute;
 
 import com.demigodsrpg.wefixcombat.attribute.AttributeData;
 import com.demigodsrpg.wefixcombat.attribute.MaterialAttribute;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MaterialRegistry implements Registry<Double, MaterialAttribute, Material> {
+public class MaterialRegistry implements AttributeRegistry<Double, MaterialAttribute, Material> {
     private static final ListMultimap<Material, AttributeData<Double, MaterialAttribute>> MAP_DATA = Multimaps.newListMultimap(new ConcurrentHashMap<>(), ArrayList::new);
 
     @Override

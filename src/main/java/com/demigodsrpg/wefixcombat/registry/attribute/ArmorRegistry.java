@@ -1,4 +1,4 @@
-package com.demigodsrpg.wefixcombat.registry;
+package com.demigodsrpg.wefixcombat.registry.attribute;
 
 import com.demigodsrpg.wefixcombat.attribute.ArmorAttribute;
 import com.demigodsrpg.wefixcombat.attribute.Attribute;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ArmorRegistry implements Registry<Integer, ArmorAttribute, ItemStack> {
+public class ArmorRegistry implements AttributeRegistry<Integer, ArmorAttribute, ItemStack> {
     private static final ListMultimap<Material, AttributeData<Integer, ArmorAttribute>> MAP_DATA = Multimaps.newListMultimap(new ConcurrentHashMap<>(), ArrayList::new);
 
     @Override

@@ -1,15 +1,22 @@
 package com.demigodsrpg.wefixcombat;
 
-import com.demigodsrpg.wefixcombat.registry.ArmorRegistry;
-import com.demigodsrpg.wefixcombat.registry.MaterialRegistry;
-import com.demigodsrpg.wefixcombat.registry.WeaponRegistry;
+import com.demigodsrpg.wefixcombat.registry.attribute.ArmorRegistry;
+import com.demigodsrpg.wefixcombat.registry.attribute.MaterialRegistry;
+import com.demigodsrpg.wefixcombat.registry.attribute.WeaponRegistry;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
+
+import java.util.logging.Logger;
 
 public class WeFixCombat {
     // -- IMPORTANT STATIC FIELDS -- //
 
-    private static final WeFixCombatPlugin PLUGIN;
     private static final WeFixCombat INST;
+    private static final WeFixCombatPlugin PLUGIN;
+    private static final FileConfiguration CONFIG;
+    private static final Logger LOGGER;
+
+    private static final String DATA_PATH;
 
     // -- REGISTRIES -- //
 
@@ -18,8 +25,12 @@ public class WeFixCombat {
     private static final WeaponRegistry WEAPON_REGISTRY;
 
     static {
-        PLUGIN = (WeFixCombatPlugin) Bukkit.getServer().getPluginManager().getPlugin("WeFixCombat");
         INST = new WeFixCombat();
+        PLUGIN = (WeFixCombatPlugin) Bukkit.getServer().getPluginManager().getPlugin("WeFixCombat");
+        CONFIG = PLUGIN.getConfig();
+        LOGGER = PLUGIN.getLogger();
+
+        DATA_PATH = PLUGIN.getDataFolder().getPath() + "/";
 
         ARMOR_REGISTRY = new ArmorRegistry();
         MATERIAL_REGISTRY = new MaterialRegistry();
@@ -28,12 +39,24 @@ public class WeFixCombat {
 
     // -- STATIC GETTERS -- //
 
+    public static WeFixCombat getInstance() {
+        return INST;
+    }
+
     public static WeFixCombatPlugin getPlugin() {
         return PLUGIN;
     }
 
-    public static WeFixCombat getInstance() {
-        return INST;
+    public static FileConfiguration getConfig() {
+        return CONFIG;
+    }
+
+    public static Logger getLogger() {
+        return LOGGER;
+    }
+
+    public static String getDataPath() {
+        return DATA_PATH;
     }
 
     public static ArmorRegistry getArmorRegistry() {
