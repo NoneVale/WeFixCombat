@@ -9,7 +9,10 @@ import com.google.common.collect.Multimaps;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ArmorRegistry implements Registry<Integer, ArmorAttribute, ItemStack> {
@@ -21,15 +24,16 @@ public class ArmorRegistry implements Registry<Integer, ArmorAttribute, ItemStac
     }
 
     @Override
-    public List<AttributeData<Integer, ArmorAttribute>> getData(ItemStack type) throws UnsupportedOperationException {
-        if (MAP_DATA.containsKey(type.getType())) {
-            return MAP_DATA.get(type.getType());
+    public List<AttributeData<Integer, ArmorAttribute>> getData(ItemStack item) throws UnsupportedOperationException {
+        Material type = item == null ? Material.AIR : item.getType();
+        if (MAP_DATA.containsKey(type)) {
+            return MAP_DATA.get(type);
         }
         throw new UnsupportedOperationException("Can only return armor data from the armor registry.");
     }
 
     @Override
-    public Collection<AttributeData<Integer, ArmorAttribute>> getData(ItemStack[] items) {
+    public List<AttributeData<Integer, ArmorAttribute>> getData(ItemStack[] items) {
         // Make a map for sorting
         Map<Attribute, AttributeData<Integer, ArmorAttribute>> map = new HashMap<>();
 
@@ -53,6 +57,6 @@ public class ArmorRegistry implements Registry<Integer, ArmorAttribute, ItemStac
         }
 
         // Return the collection of all data
-        return map.values();
+        return new ArrayList<>(map.values());
     }
 }

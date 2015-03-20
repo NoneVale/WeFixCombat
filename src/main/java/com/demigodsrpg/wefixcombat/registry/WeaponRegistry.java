@@ -21,9 +21,10 @@ public class WeaponRegistry implements Registry<Double, WeaponAttribute, ItemSta
     }
 
     @Override
-    public List<AttributeData<Double, WeaponAttribute>> getData(ItemStack type) throws UnsupportedOperationException {
-        if (MAP_DATA.containsKey(type.getType())) {
-            return MAP_DATA.get(type.getType());
+    public List<AttributeData<Double, WeaponAttribute>> getData(ItemStack item) throws UnsupportedOperationException {
+        Material type = item == null ? Material.AIR : item.getType();
+        if (MAP_DATA.containsKey(type)) {
+            return MAP_DATA.get(type);
         }
         throw new UnsupportedOperationException("Can only return weapon data from the weapon registry.");
     }

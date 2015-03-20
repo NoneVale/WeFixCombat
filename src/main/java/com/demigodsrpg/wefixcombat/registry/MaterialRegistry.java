@@ -33,11 +33,48 @@ public class MaterialRegistry implements Registry<Double, MaterialAttribute, Mat
     }
 
     static {
+        // -- AIR -- //
+        register(Material.AIR, MaterialAttribute.MASS, 0);
+        register(Material.AIR, MaterialAttribute.TENSILE_STRENGTH, 10);
+        register(Material.AIR, MaterialAttribute.DURABILITY, 10);
+
+        // -- LEATHER -- //
+        register(Material.LEATHER, MaterialAttribute.MASS, 0.5);
+        register(Material.LEATHER, MaterialAttribute.TENSILE_STRENGTH, 0.5);
+        register(Material.LEATHER, MaterialAttribute.DURABILITY, 6);
+
         // -- WOOD -- //
-        registerMaterial(Material.WOOD, MaterialAttribute.MASS, 0.5);
+        register(Material.WOOD, MaterialAttribute.MASS, 1);
+        register(Material.WOOD, MaterialAttribute.TENSILE_STRENGTH, 1);
+        register(Material.WOOD, MaterialAttribute.DURABILITY, 1);
+
+        // -- STONE -- //
+        register(Material.STONE, MaterialAttribute.MASS, 2);
+        register(Material.STONE, MaterialAttribute.TENSILE_STRENGTH, 4);
+        register(Material.STONE, MaterialAttribute.DURABILITY, 8);
+
+        // -- GOLD (GOLD_BLOCK) -- //
+        register(Material.GOLD_BLOCK, MaterialAttribute.MASS, 5);
+        register(Material.GOLD_BLOCK, MaterialAttribute.TENSILE_STRENGTH, 2);
+        register(Material.GOLD_BLOCK, MaterialAttribute.DURABILITY, 10);
+
+        // -- CHAINMAIL (CHAINMAIL_HELMET) -- //
+        register(Material.CHAINMAIL_HELMET, MaterialAttribute.MASS, 5);
+        register(Material.CHAINMAIL_HELMET, MaterialAttribute.TENSILE_STRENGTH, 9);
+        register(Material.CHAINMAIL_HELMET, MaterialAttribute.DURABILITY, 4);
+
+        // -- IRON (IRON_BLOCK) -- //
+        register(Material.IRON_BLOCK, MaterialAttribute.MASS, 7);
+        register(Material.IRON_BLOCK, MaterialAttribute.TENSILE_STRENGTH, 8);
+        register(Material.IRON_BLOCK, MaterialAttribute.DURABILITY, 6);
+
+        // -- DIAMOND -- //
+        register(Material.DIAMOND, MaterialAttribute.MASS, 10);
+        register(Material.DIAMOND, MaterialAttribute.TENSILE_STRENGTH, 10);
+        register(Material.DIAMOND, MaterialAttribute.DURABILITY, 10);
     }
 
-    private static void registerMaterial(Material material, MaterialAttribute attribute, double data) {
+    private static void register(Material material, MaterialAttribute attribute, double data) {
         MAP_DATA.put(material, new AttributeData<>(attribute, data));
     }
 }
