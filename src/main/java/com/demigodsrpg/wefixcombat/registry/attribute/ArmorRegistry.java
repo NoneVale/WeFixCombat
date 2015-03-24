@@ -59,4 +59,39 @@ public class ArmorRegistry implements AttributeRegistry<Integer, ArmorAttribute,
         // Return the collection of all data
         return new ArrayList<>(map.values());
     }
+
+    public int getData(ArmorAttribute attribute, Material type) {
+        int data = 0;
+        if (MAP_DATA.containsKey(type)) {
+            for (AttributeData<Integer, ArmorAttribute> aData : MAP_DATA.get(type)) {
+                if (attribute.equals(aData.getAttribute())) {
+                    data += aData.getData();
+                    break;
+                }
+            }
+        }
+        return data;
+    }
+
+    public int getData(ArmorAttribute attribute, Material[] types) {
+        int data = 0;
+        for (Material type : types) {
+            data += getData(attribute, type);
+        }
+        return data;
+    }
+
+    public int getData(ArmorAttribute attribute, ItemStack item) {
+        return getData(attribute, item.getType());
+    }
+
+    public int getData(ArmorAttribute attribute, ItemStack[] items) {
+        int data = 0;
+        for (ItemStack item : items) {
+            if (item != null) {
+                data += getData(attribute, item.getType());
+            }
+        }
+        return data;
+    }
 }

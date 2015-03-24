@@ -6,6 +6,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,41 @@ public class MaterialRegistry implements AttributeRegistry<Double, MaterialAttri
             return MAP_DATA.get(type);
         }
         throw new UnsupportedOperationException("Can only return material data from the material registry.");
+    }
+
+    public double getData(MaterialAttribute attribute, Material type) {
+        double data = 0;
+        if (MAP_DATA.containsKey(type)) {
+            for (AttributeData<Double, MaterialAttribute> mData : MAP_DATA.get(type)) {
+                if (attribute.equals(mData.getAttribute())) {
+                    data += mData.getData();
+                    break;
+                }
+            }
+        }
+        return data;
+    }
+
+    public double getData(MaterialAttribute attribute, Material[] types) {
+        double data = 0;
+        for (Material type : types) {
+            data += getData(attribute, type);
+        }
+        return data;
+    }
+
+    public double getData(MaterialAttribute attribute, ItemStack item) {
+        return getData(attribute, item.getType());
+    }
+
+    public double getData(MaterialAttribute attribute, ItemStack[] items) {
+        double data = 0;
+        for (ItemStack item : items) {
+            if (item != null) {
+                data += getData(attribute, item.getType());
+            }
+        }
+        return data;
     }
 
     @Override

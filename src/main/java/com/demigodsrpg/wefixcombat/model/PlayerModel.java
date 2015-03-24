@@ -2,8 +2,7 @@ package com.demigodsrpg.wefixcombat.model;
 
 import com.demigodsrpg.wefixcombat.WeFixCombat;
 import com.demigodsrpg.wefixcombat.attribute.ArmorAttribute;
-import com.demigodsrpg.wefixcombat.attribute.AttributeData;
-import com.demigodsrpg.wefixcombat.attribute.WeaponAttribute;
+import com.demigodsrpg.wefixcombat.attribute.MaterialAttribute;
 import com.demigodsrpg.wefixcombat.health.HealthData;
 import com.demigodsrpg.wefixcombat.util.JsonSection;
 import org.bukkit.entity.Player;
@@ -23,19 +22,21 @@ public class PlayerModel extends AbstractPersistentModel<String> {
     private String LAST_KNOWN_NAME;
     private List<HealthData> HEALTH_DATA;
 
-    private transient List<AttributeData<Double, WeaponAttribute>> WEAPON_DATA;
-    private transient List<AttributeData<Integer, ArmorAttribute>> ARMOR_DATA;
-
     private transient long attacking = 0;
     private transient double maxHealth = 20.0;
+    private transient int fatigueLevel = 0;
+
+    private transient double mass = 1;
+
+    private transient int easeOfMovement = 1;
+    private transient int fatigueRate = 0;
+    private transient int damageResistence = 0;
 
     // -- CONSTRUCTORS -- //
 
     public PlayerModel(Player player) {
         LAST_KNOWN_NAME = player.getName();
         MOJANG_ID = player.getUniqueId().toString();
-        WEAPON_DATA = WeFixCombat.getWeaponRegistry().getData(player.getItemInHand());
-        ARMOR_DATA = WeFixCombat.getArmorRegistry().getData(player.getInventory().getArmorContents());
     }
 
     public PlayerModel(String mojangId, JsonSection json) {
@@ -58,14 +59,6 @@ public class PlayerModel extends AbstractPersistentModel<String> {
         return HEALTH_DATA;
     }
 
-    public List<AttributeData<Double, WeaponAttribute>> getWeaponData() {
-        return WEAPON_DATA;
-    }
-
-    public List<AttributeData<Integer, ArmorAttribute>> getArmorData() {
-        return ARMOR_DATA;
-    }
-
     public boolean isAttacking() {
         return System.currentTimeMillis() - attacking <= ATTACK_INTERVAL_MILLIS;
     }
@@ -74,11 +67,33 @@ public class PlayerModel extends AbstractPersistentModel<String> {
         return maxHealth;
     }
 
+    public int getFatigueLevel() {
+        return fatigueLevel;
+    }
+
+    public double getMass() {
+        return mass;
+    }
+
+    public int getEaseOfMovement() {
+        return easeOfMovement;
+    }
+
+    public int getFatigueRate() {
+        return fatigueRate;
+    }
+
+    public int getDamageResistence() {
+        return damageResistence;
+    }
+
     // -- MUTATORS -- //
 
     public void resetToCurrent(Player player) {
-        WEAPON_DATA = WeFixCombat.getWeaponRegistry().getData(player.getItemInHand());
-        ARMOR_DATA = WeFixCombat.getArmorRegistry().getData(player.getInventory().getArmorContents());
+        mass = 1 + WeFixCombat.getMaterialRegistry().getData(MaterialAttribute.MASS, player.getItemInHand());
+        mass += WeFixCombat.getMaterialRegistry().getData(MaterialAttribute.MASS, player.getInventory().getArmorContents());
+
+        easeOfMovement = WeFixCombat.getArmorRegistry().getData(ArmorAttribute.EASE_OF_MOVEMENT, player.getInventory().getArmorContents());
     }
 
     public void calculateMaxHealth() {
