@@ -7,7 +7,6 @@ import com.demigodsrpg.wefixcombat.attribute.Health;
 import com.demigodsrpg.wefixcombat.attribute.MaterialAttribute;
 import com.demigodsrpg.wefixcombat.util.JsonSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +25,10 @@ public class PlayerModel extends AbstractPersistentModel<String> {
     private double DEFAULT_MAX_HEALTH;
     private Map<Health, Double> HEALTH_DATA = new ConcurrentHashMap<>();
 
+    private transient double totalHealth;
+    private transient double maxHealth;
+
     private transient long attacking = 0;
-    private transient double totalHealthFraction = 1.0;
-    private transient double maxHealth = 20.0;
     private transient int fatigueLevel = 0;
 
     private transient double mass = 1;
@@ -43,6 +43,8 @@ public class PlayerModel extends AbstractPersistentModel<String> {
         LAST_KNOWN_NAME = player.getName();
         MOJANG_ID = player.getUniqueId().toString();
         DEFAULT_MAX_HEALTH = player.getMaxHealth(); // TODO This might cause issues
+        totalHealth = DEFAULT_MAX_HEALTH;
+        maxHealth = DEFAULT_MAX_HEALTH;
 
         calculateMaxHealth(player);
         calculateCurrentHealth(player, false);
@@ -52,8 +54,10 @@ public class PlayerModel extends AbstractPersistentModel<String> {
         MOJANG_ID = mojangId;
         LAST_KNOWN_NAME = json.getString("last-known-name");
         DEFAULT_MAX_HEALTH = json.getDouble("default-max-health");
+        totalHealth = DEFAULT_MAX_HEALTH;
+        maxHealth = DEFAULT_MAX_HEALTH;
         for (Health health : Health.values()) {
-            HEALTH_DATA.put(health, json.getDouble(health.name() + "-HP"));
+            HEALTH_DATA.put(health, json.getDouble(health.name() + "-HP", DEFAULT_MAX_HEALTH));
         }
     }
 
@@ -76,14 +80,14 @@ public class PlayerModel extends AbstractPersistentModel<String> {
     }
 
     public double getTotalHealth() {
-        return maxHealth * totalHealthFraction;
+        return totalHealth;
     }
 
     public double getMaxHealth() {
         return maxHealth;
     }
 
-    public double getHelath(Health health) {
+    public double getHealth(Health health) {
         return HEALTH_DATA.getOrDefault(health, 20.0);
     }
 
@@ -126,19 +130,19 @@ public class PlayerModel extends AbstractPersistentModel<String> {
 
     public double damage(Player player, double damage, double armor, double enchant, double block) {
         // Recalculate the damage
-        damage -= armor * damageResistance;
-        damage -= enchant * damageResistance;
-        damage -= block * damageResistance; // TODO This should deal with weapons not armor
+        // damage -= armor * damageResistance;
+        // damage -= enchant * damageResistance;
+        // damage -= block * damageResistance; // TODO This should deal with weapons not armor
 
         // Split the damage up and add to respective spots
         damage /= 6;
-        HEALTH_DATA.put(Health.HEAD, getHelath(Health.HEAD) - damage * 2);
-        HEALTH_DATA.put(Health.CHEST, getHelath(Health.HEAD) - damage * 2);
-        HEALTH_DATA.put(Health.LEGS, getHelath(Health.HEAD) - damage);
-        HEALTH_DATA.put(Health.FEET, getHelath(Health.HEAD) - damage);
+        HEALTH_DATA.put(Health.HEAD, getHealth(Health.HEAD) - damage * 2);
+        HEALTH_DATA.put(Health.CHEST, getHealth(Health.HEAD) - damage * 2);
+        HEALTH_DATA.put(Health.LEGS, getHealth(Health.HEAD) - damage);
+        HEALTH_DATA.put(Health.FEET, getHealth(Health.HEAD) - damage);
 
         // Add blood damage
-        HEALTH_DATA.put(Health.BLOOD, getHelath(Health.BLOOD) + RandomUtil.generateDoubleRange(0.0, 0.25)); // TODO Balance this
+        HEALTH_DATA.put(Health.BLOOD, getHealth(Health.BLOOD) + RandomUtil.generateDoubleRange(0.0, 0.15)); // TODO Balance this
 
         // Calculate the current health
         calculateMaxHealth(player);
@@ -153,39 +157,38 @@ public class PlayerModel extends AbstractPersistentModel<String> {
         double feet = HEALTH_DATA.getOrDefault(Health.FEET, DEFAULT_MAX_HEALTH);
 
         // Calculate the mean total
-        double total = (head * head * chest * chest * legs * feet) / 6;
+        double damage = (head * chest * legs * feet) / 6;
+        double total = player.getHealth() - damage;
 
         // Save the fraction
-        totalHealthFraction = total / maxHealth;
+        if (total > maxHealth) {
+            totalHealth = maxHealth;
+        } else {
+            totalHealth = total;
+        }
 
         // Set the health
         if (fresh) {
-            player.damage(player.getHealth() - total);
+            player.damage(damage);
         }
 
-        // If it is less than one, count it as zero
-        if (totalHealthFraction < 1) {
-            totalHealthFraction = 0;
-            if (fresh) {
-                player.setLastDamageCause(new EntityDamageEvent(player, EntityDamageEvent.DamageCause.CUSTOM, 1.0));
-                player.damage(1.0);
-            }
-            return 0.0;
-        }
-        return getTotalHealth();
+        return totalHealth;
     }
 
     public void calculateMaxHealth(Player player) {
         // Account for blood damage
         if (USE_BLOOD_HEALTH) {
-            double blood = HEALTH_DATA.get(Health.BLOOD);
+            double blood = HEALTH_DATA.getOrDefault(Health.BLOOD, 0.0);
             maxHealth = DEFAULT_MAX_HEALTH - blood;
-            if (maxHealth < 1) {
-                player.setLastDamageCause(new EntityDamageEvent(player, EntityDamageEvent.DamageCause.CUSTOM, 1.0));
-                player.damage(1.0);
-            } else {
-                player.setMaxHealth(maxHealth);
+            if (maxHealth < 0) {
+                player.setMaxHealth(0.1);
+                player.damage(1);
+                return;
             }
+            if (player.getHealth() > maxHealth) {
+                player.setHealth(maxHealth);
+            }
+            player.setMaxHealth(maxHealth);
         } else {
             maxHealth = player.getMaxHealth();
         }
@@ -196,7 +199,7 @@ public class PlayerModel extends AbstractPersistentModel<String> {
             HEALTH_DATA.put(health, DEFAULT_MAX_HEALTH);
         }
         HEALTH_DATA.put(Health.BLOOD, 0.0);
-        totalHealthFraction = player.getHealth() / maxHealth;
+        totalHealth = DEFAULT_MAX_HEALTH;
         player.setHealth(DEFAULT_MAX_HEALTH);
     }
 

@@ -151,7 +151,7 @@ public class JsonSection {
         return Double.parseDouble(get(s).toString());
     }
 
-    Double getDouble(String s, double v) {
+    public Double getDouble(String s, double v) {
         return Double.parseDouble(get(s, v).toString());
     }
 

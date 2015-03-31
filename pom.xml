@@ -118,10 +118,10 @@
                                     <pattern>com.google.common.util.concurrent</pattern>
                                     <shadedPattern>net.minecraft.util.com.google.common.util.concurrent</shadedPattern>
                                 </relocation>
-                                <relocation>
+                                <!--<relocation>
                                     <pattern>com.google.gson</pattern>
                                     <shadedPattern>org.bukkit.craftbukkit.libs.com.google.gson</shadedPattern>
-                                </relocation>
+                                </relocation> -->
                                 <!-- Shaded into the jar -->
                                 <relocation>
                                     <pattern>com.censoredsoftware.library</pattern>
