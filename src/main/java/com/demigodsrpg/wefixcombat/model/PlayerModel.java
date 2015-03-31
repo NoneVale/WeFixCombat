@@ -11,6 +11,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerModel extends AbstractPersistentModel<String> {
     // -- STATIC CONSTANTS -- //
@@ -22,7 +23,8 @@ public class PlayerModel extends AbstractPersistentModel<String> {
 
     private final String MOJANG_ID;
     private String LAST_KNOWN_NAME;
-    private Map<Health, Double> HEALTH_DATA;
+    private double DEFAULT_MAX_HEALTH;
+    private Map<Health, Double> HEALTH_DATA = new ConcurrentHashMap<>();
 
     private transient long attacking = 0;
     private transient double totalHealthFraction = 1.0;
@@ -33,13 +35,14 @@ public class PlayerModel extends AbstractPersistentModel<String> {
 
     private transient int easeOfMovement = 1;
     private transient int fatigueRate = 0;
-    private transient int damageResistence = 0;
+    private transient int damageResistance = 0;
 
     // -- CONSTRUCTORS -- //
 
     public PlayerModel(Player player) {
         LAST_KNOWN_NAME = player.getName();
         MOJANG_ID = player.getUniqueId().toString();
+        DEFAULT_MAX_HEALTH = player.getMaxHealth(); // TODO This might cause issues
 
         calculateMaxHealth(player);
         calculateCurrentHealth(player, false);
@@ -48,6 +51,7 @@ public class PlayerModel extends AbstractPersistentModel<String> {
     public PlayerModel(String mojangId, JsonSection json) {
         MOJANG_ID = mojangId;
         LAST_KNOWN_NAME = json.getString("last-known-name");
+        DEFAULT_MAX_HEALTH = json.getDouble("default-max-health");
         for (Health health : Health.values()) {
             HEALTH_DATA.put(health, json.getDouble(health.name() + "-HP"));
         }
@@ -99,40 +103,54 @@ public class PlayerModel extends AbstractPersistentModel<String> {
         return fatigueRate;
     }
 
-    public int getDamageResistence() {
-        return damageResistence;
+    public int getDamageResistance() {
+        return damageResistance;
     }
 
     // -- MUTATORS -- //
+
+    public void setDefaultMaxHealth(double maxHealth) {
+        DEFAULT_MAX_HEALTH = maxHealth;
+    }
 
     public void resetToCurrent(Player player) {
         mass = 1 + WeFixCombat.getMaterialRegistry().getData(MaterialAttribute.MASS, player.getItemInHand());
         mass += WeFixCombat.getMaterialRegistry().getData(MaterialAttribute.MASS, player.getInventory().getArmorContents());
 
         easeOfMovement = WeFixCombat.getArmorRegistry().getData(ArmorAttribute.EASE_OF_MOVEMENT, player.getInventory().getArmorContents());
-        damageResistence = WeFixCombat.getArmorRegistry().getData(ArmorAttribute.DAMAGE_RESISTENCE, player.getInventory().getArmorContents());
+        damageResistance = WeFixCombat.getArmorRegistry().getData(ArmorAttribute.DAMAGE_RESISTENCE, player.getInventory().getArmorContents());
 
         calculateMaxHealth(player);
         calculateCurrentHealth(player, false);
     }
 
-    public void damage(Player player, double damage, boolean fresh) {
-        damage -= damageResistence; // TODO This might be the wrong place to handle this, also it needs to be balanced
+    public double damage(Player player, double damage, double armor, double enchant, double block) {
+        // Recalculate the damage
+        damage -= armor * damageResistance;
+        damage -= enchant * damageResistance;
+        damage -= block * damageResistance; // TODO This should deal with weapons not armor
+
+        // Split the damage up and add to respective spots
         damage /= 6;
         HEALTH_DATA.put(Health.HEAD, getHelath(Health.HEAD) - damage * 2);
         HEALTH_DATA.put(Health.CHEST, getHelath(Health.HEAD) - damage * 2);
         HEALTH_DATA.put(Health.LEGS, getHelath(Health.HEAD) - damage);
         HEALTH_DATA.put(Health.FEET, getHelath(Health.HEAD) - damage);
+
+        // Add blood damage
         HEALTH_DATA.put(Health.BLOOD, getHelath(Health.BLOOD) + RandomUtil.generateDoubleRange(0.0, 0.25)); // TODO Balance this
-        calculateCurrentHealth(player, fresh);
+
+        // Calculate the current health
+        calculateMaxHealth(player);
+        return player.getHealth() - calculateCurrentHealth(player, false);
     }
 
-    public void calculateCurrentHealth(Player player, boolean damage) {
+    public double calculateCurrentHealth(Player player, boolean fresh) {
         // Get all of the health data
-        double head = HEALTH_DATA.get(Health.HEAD);
-        double chest = HEALTH_DATA.get(Health.CHEST);
-        double legs = HEALTH_DATA.get(Health.LEGS);
-        double feet = HEALTH_DATA.get(Health.FEET);
+        double head = HEALTH_DATA.getOrDefault(Health.HEAD, DEFAULT_MAX_HEALTH);
+        double chest = HEALTH_DATA.getOrDefault(Health.CHEST, DEFAULT_MAX_HEALTH);
+        double legs = HEALTH_DATA.getOrDefault(Health.LEGS, DEFAULT_MAX_HEALTH);
+        double feet = HEALTH_DATA.getOrDefault(Health.FEET, DEFAULT_MAX_HEALTH);
 
         // Calculate the mean total
         double total = (head * head * chest * chest * legs * feet) / 6;
@@ -141,27 +159,27 @@ public class PlayerModel extends AbstractPersistentModel<String> {
         totalHealthFraction = total / maxHealth;
 
         // Set the health
-        if (damage) {
+        if (fresh) {
             player.damage(player.getHealth() - total);
-        } else {
-            player.setHealth(getTotalHealth());
         }
 
         // If it is less than one, count it as zero
         if (totalHealthFraction < 1) {
             totalHealthFraction = 0;
-            if (damage) {
+            if (fresh) {
                 player.setLastDamageCause(new EntityDamageEvent(player, EntityDamageEvent.DamageCause.CUSTOM, 1.0));
                 player.damage(1.0);
             }
+            return 0.0;
         }
+        return getTotalHealth();
     }
 
     public void calculateMaxHealth(Player player) {
         // Account for blood damage
         if (USE_BLOOD_HEALTH) {
             double blood = HEALTH_DATA.get(Health.BLOOD);
-            maxHealth = 20.0 - blood;
+            maxHealth = DEFAULT_MAX_HEALTH - blood;
             if (maxHealth < 1) {
                 player.setLastDamageCause(new EntityDamageEvent(player, EntityDamageEvent.DamageCause.CUSTOM, 1.0));
                 player.damage(1.0);
@@ -175,17 +193,17 @@ public class PlayerModel extends AbstractPersistentModel<String> {
 
     public void resetHealth(Player player) {
         for (Health health : Health.values()) {
-            HEALTH_DATA.put(health, 20.0);
+            HEALTH_DATA.put(health, DEFAULT_MAX_HEALTH);
         }
         HEALTH_DATA.put(Health.BLOOD, 0.0);
         totalHealthFraction = player.getHealth() / maxHealth;
-        player.setHealth(20.0);
+        player.setHealth(DEFAULT_MAX_HEALTH);
     }
 
     public void resetMaxHealth(Player player) {
         HEALTH_DATA.put(Health.BLOOD, 0.0);
-        maxHealth = 20.0;
-        player.setMaxHealth(20.0);
+        maxHealth = DEFAULT_MAX_HEALTH;
+        player.setMaxHealth(DEFAULT_MAX_HEALTH);
     }
 
     public void setAttacking() {
@@ -200,7 +218,8 @@ public class PlayerModel extends AbstractPersistentModel<String> {
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put(LAST_KNOWN_NAME, "last-known-name");
+        map.put("last-known-name", LAST_KNOWN_NAME);
+        map.put("default-max-health", DEFAULT_MAX_HEALTH);
         for (Map.Entry<Health, Double> entry : HEALTH_DATA.entrySet()) {
             map.put(entry.getKey().name() + "-HP", entry.getValue());
         }

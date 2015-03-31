@@ -12,16 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class WeaponRegistry implements AttributeRegistry<Double, WeaponAttribute, ItemStack> {
-    private static final ListMultimap<Material, AttributeData<Double, WeaponAttribute>> MAP_DATA = Multimaps.newListMultimap(new ConcurrentHashMap<>(), ArrayList::new);
+public class WeaponRegistry implements AttributeRegistry<WeaponAttribute, ItemStack> {
+    private static final ListMultimap<Material, AttributeData<WeaponAttribute>> MAP_DATA = Multimaps.newListMultimap(new ConcurrentHashMap<>(), ArrayList::new);
 
     @Override
-    public Multimap<Material, AttributeData<Double, WeaponAttribute>> getMap() {
+    public Multimap<Material, AttributeData<WeaponAttribute>> getMap() {
         return MAP_DATA;
     }
 
     @Override
-    public List<AttributeData<Double, WeaponAttribute>> getData(ItemStack item) {
+    public List<AttributeData<WeaponAttribute>> getData(ItemStack item) {
         Material type = item == null ? Material.AIR : item.getType();
         if (MAP_DATA.containsKey(type)) {
             return MAP_DATA.get(type);
@@ -31,7 +31,7 @@ public class WeaponRegistry implements AttributeRegistry<Double, WeaponAttribute
     }
 
     @Override
-    public List<AttributeData<Double, WeaponAttribute>> getData(ItemStack[] typeArray) throws UnsupportedOperationException {
+    public List<AttributeData<WeaponAttribute>> getData(ItemStack[] typeArray) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Weapons do not stack attributes.");
     }
 }

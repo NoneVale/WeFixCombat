@@ -12,16 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MaterialRegistry implements AttributeRegistry<Double, MaterialAttribute, Material> {
-    private static final ListMultimap<Material, AttributeData<Double, MaterialAttribute>> MAP_DATA = Multimaps.newListMultimap(new ConcurrentHashMap<>(), ArrayList::new);
+public class MaterialRegistry implements AttributeRegistry<MaterialAttribute, Material> {
+    private static final ListMultimap<Material, AttributeData<MaterialAttribute>> MAP_DATA = Multimaps.newListMultimap(new ConcurrentHashMap<>(), ArrayList::new);
 
     @Override
-    public Multimap<Material, AttributeData<Double, MaterialAttribute>> getMap() {
+    public Multimap<Material, AttributeData<MaterialAttribute>> getMap() {
         return MAP_DATA;
     }
 
     @Override
-    public List<AttributeData<Double, MaterialAttribute>> getData(Material type) throws UnsupportedOperationException {
+    public List<AttributeData<MaterialAttribute>> getData(Material type) throws UnsupportedOperationException {
         if (MAP_DATA.containsKey(type)) {
             return MAP_DATA.get(type);
         }
@@ -31,7 +31,7 @@ public class MaterialRegistry implements AttributeRegistry<Double, MaterialAttri
     public double getData(MaterialAttribute attribute, Material type) {
         double data = 0;
         if (MAP_DATA.containsKey(type)) {
-            for (AttributeData<Double, MaterialAttribute> mData : MAP_DATA.get(type)) {
+            for (AttributeData<MaterialAttribute> mData : MAP_DATA.get(type)) {
                 if (attribute.equals(mData.getAttribute())) {
                     data += mData.getData();
                     break;
@@ -64,7 +64,7 @@ public class MaterialRegistry implements AttributeRegistry<Double, MaterialAttri
     }
 
     @Override
-    public List<AttributeData<Double, MaterialAttribute>> getData(Material[] typeArray) throws UnsupportedOperationException {
+    public List<AttributeData<MaterialAttribute>> getData(Material[] typeArray) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Materials do not stack attributes.");
     }
 

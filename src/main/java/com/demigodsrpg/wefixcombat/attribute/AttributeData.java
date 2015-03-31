@@ -1,10 +1,10 @@
 package com.demigodsrpg.wefixcombat.attribute;
 
-public class AttributeData<D, A extends Attribute<D>> {
+public class AttributeData<A extends Attribute> {
     private A attribute;
-    private D data;
+    private double data;
 
-    public AttributeData(A attribute, D data) {
+    public AttributeData(A attribute, double data) {
         this.attribute = attribute;
         this.data = data;
     }
@@ -13,11 +13,11 @@ public class AttributeData<D, A extends Attribute<D>> {
         return attribute;
     }
 
-    public D getData() {
+    public double getData() {
         return data;
     }
 
-    public void setData(D data) {
+    public void setData(double data) {
         this.data = data;
     }
 }

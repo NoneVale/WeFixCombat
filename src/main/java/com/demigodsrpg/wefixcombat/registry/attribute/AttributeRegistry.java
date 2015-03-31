@@ -7,10 +7,10 @@ import org.bukkit.Material;
 
 import java.util.List;
 
-public interface AttributeRegistry<D, A extends Attribute<D>, T> {
-    Multimap<Material, AttributeData<D, A>> getMap();
+public interface AttributeRegistry<A extends Attribute, T> {
+    Multimap<Material, AttributeData<A>> getMap();
 
-    List<AttributeData<D, A>> getData(T type);
+    List<AttributeData<A>> getData(T type);
 
-    List<AttributeData<D, A>> getData(T[] typeArray);
+    List<AttributeData<A>> getData(T[] typeArray);
 }
