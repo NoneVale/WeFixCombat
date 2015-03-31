@@ -91,11 +91,19 @@ public class WeFixCombat {
     // -- ENABLE/DISABLE METHODS -- //
 
     void onEnable() {
+        LOGGER.info("Enabling...");
+
         PluginManager manager = getPlugin().getServer().getPluginManager();
         manager.registerEvents(new DamageListener(), PLUGIN);
+
+        LOGGER.info("... success!");
     }
 
     void onDisable() {
+        LOGGER.info("Disabling...");
+
         HandlerList.unregisterAll(PLUGIN);
+
+        LOGGER.info("... success!");
     }
 }

@@ -1,4 +1,4 @@
-name: {project.name}
+name: ${project.name}
 main: com.demigodsrpg.wefixcombat.WeFixCombatPlugin
 version: ${project.version}
 description: ${project.description}
