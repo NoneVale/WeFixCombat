@@ -33,9 +33,9 @@ public class PlayerModel extends AbstractPersistentModel<String> {
 
     private transient double mass = 1;
 
-    private transient int easeOfMovement = 1;
-    private transient int fatigueRate = 0;
-    private transient int damageResistance = 0;
+    private transient double easeOfMovement = 1;
+    private transient double fatigueRate = 0;
+    private transient double damageResistance = 0;
 
     // -- CONSTRUCTORS -- //
 
@@ -95,15 +95,15 @@ public class PlayerModel extends AbstractPersistentModel<String> {
         return mass;
     }
 
-    public int getEaseOfMovement() {
+    public double getEaseOfMovement() {
         return easeOfMovement;
     }
 
-    public int getFatigueRate() {
+    public double getFatigueRate() {
         return fatigueRate;
     }
 
-    public int getDamageResistance() {
+    public double getDamageResistance() {
         return damageResistance;
     }
 
