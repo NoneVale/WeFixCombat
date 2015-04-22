@@ -22,11 +22,11 @@ public class DamageListener implements Listener {
             PlayerModel model = WeFixCombat.getPlayerRegistry().fromPlayer(player);
 
             double damage = event.getDamage();
-            double armor = event.getDamage(EntityDamageEvent.DamageModifier.ARMOR);
-            double enchant = event.getDamage(EntityDamageEvent.DamageModifier.MAGIC);
-            double block = event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING);
+            double armor = event.getDamage(EntityDamageEvent.DamageModifier.ARMOR) / 2;
+            double enchant = event.getDamage(EntityDamageEvent.DamageModifier.MAGIC) / 2;
+            double block = event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) / 2;
 
-            double finalDamage = model.damage(player, damage, armor, enchant, block);
+            double finalDamage = model.damage(player, armor, enchant, block, damage);
             WeFixCombat.getPlayerRegistry().register(model);
 
             event.setDamage(finalDamage);
