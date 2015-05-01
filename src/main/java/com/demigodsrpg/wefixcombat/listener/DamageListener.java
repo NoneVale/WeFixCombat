@@ -26,7 +26,7 @@ public class DamageListener implements Listener {
             double enchant = event.getDamage(EntityDamageEvent.DamageModifier.MAGIC);
             double block = event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING);
 
-            double finalDamage = model.damage(player, damage, armor, enchant, block);
+            double finalDamage = damage + armor + enchant + block;
             WeFixCombat.getPlayerRegistry().register(model);
 
             event.setDamage(finalDamage);
